@@ -1,23 +1,16 @@
+const { v4: uuid, validate: uuidValidate } = require('uuid');
 const express = require('express');
 const {check, validationResult} = require('express-validator/check');
 const bodyParser = require('body-parser');
+const { MOCK_USERS, BILLY_ID, JIMMY_ID } = require('./constants/mock-users');
 
 
 const app = express();
 app.use(bodyParser.json());
 const port = process.env.PORT || 9001;
 
-let existingUsers = {
-    9: {
-        firstName: 'Billy',
-        email: 'billy@gmail.com',
-        password: 'ilikeicecream123'
-    },
-    2: {
-        firstName: 'Jimmy',
-        email: 'jimmy@gmail.com',
-        password: 'iamnotfondoficecream1234'
-    },
+const EXISTING_USERS = {
+    ...MOCK_USERS,
 };
 
 const userValidation = [
@@ -35,16 +28,25 @@ app.get('/api/home/', (request, response) => {
 });
 
 
-app.get('/api/get-user/:id([0-9]{1})', (request, response) => {
+app.get('/api/get-user/:id', (request, response) => {
     const id = request.params.id;
-    let user = null;
-    try {
-        user = existingUsers[id];
-    } catch(err) {
-        response.status(404).send({errors: ['User not found']});
+    if (!uuidValidate(id)) {
+        response.status(400).send({errors: ['Invalid user id']})
+        return;
     }
 
-    response.send({user})
+    const user = EXISTING_USERS[id];
+    if (!user) {
+        response.status(404).send({errors: ['User not found']});
+        return;
+    }
+
+    response.send({
+        user: {
+            first_name: user.first_name,
+            email: user.email,
+        }
+    });
 });
 
 app.post('/api/users/', userValidation, (request, response) => {
@@ -55,12 +57,12 @@ app.post('/api/users/', userValidation, (request, response) => {
     }
 
     const user = {
-        firstName: request.body.first_name,
+        first_name: request.body.first_name,
         email: request.body.email,
         password: request.body.password,
     };
     const id = Math.floor(Math.random() * 20);
-    existingUsers[id] = user;
+    EXISTING_USERS[id] = user;
 
     response.send({
         user,
@@ -71,4 +73,4 @@ app.post('/api/users/', userValidation, (request, response) => {
 
 
 module.exports = app.listen(
-    port, () => console.log(`Listening on port ${port}`));
+    port, () => console.log(`Listening on port ${port} ${BILLY_ID} ${JIMMY_ID}`));
