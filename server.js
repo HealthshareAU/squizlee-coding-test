@@ -1,22 +1,26 @@
 const express = require('express');
 const {check, validationResult} = require('express-validator/check');
+const cors = require('cors')
 const bodyParser = require('body-parser');
 
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors({origin: 'http://localhost:3000'}));
 const port = process.env.PORT || 9001;
 
 let existingUsers = {
     9: {
         firstName: 'Billy',
         email: 'billy@gmail.com',
-        password: 'ilikeicecream123'
+        password: 'ilikeicecream123',
+        favouriteFruit: 'Mango',
     },
     2: {
         firstName: 'Jimmy',
         email: 'jimmy@gmail.com',
-        password: 'iamnotfondoficecream1234'
+        password: 'iamnotfondoficecream1234',
+        favouriteFruit: 'Apple',
     },
 };
 
@@ -28,6 +32,7 @@ const userValidation = [
     check(
         'password'
     ).isLength({min: 8}).withMessage('Password must be at least 8 characters'),
+    check('favourite_fruit').exists().withMessage('You must include a favourite fruit!'),
 ];
 
 app.get('/api/home/', (request, response) => {
@@ -58,6 +63,7 @@ app.post('/api/users/', userValidation, (request, response) => {
         firstName: request.body.first_name,
         email: request.body.email,
         password: request.body.password,
+        favouriteFruit: request.body.favourite_fruit,
     };
     const id = Math.floor(Math.random() * 20);
     existingUsers[id] = user;
