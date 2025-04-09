@@ -37,11 +37,10 @@ app.get('/api/home/', (request, response) => {
 
 app.get('/api/get-user/:id([0-9]{1})', (request, response) => {
     const id = request.params.id;
-    let user = null;
-    try {
-        user = existingUsers[id];
-    } catch(err) {
+    const user = existingUsers[id];
+    if (!user) {
         response.status(404).send({errors: ['User not found']});
+        return;
     }
 
     response.send({user})

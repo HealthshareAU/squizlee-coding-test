@@ -48,4 +48,45 @@ describe('test server', function () {
             done();
         });
     });
+
+    it('should respond with 404 an error if user with id is not found', (done) => {
+        request(server).get('/api/get-user/5').expect(404).end((err, res) => {
+            expect(res.body.errors[0]).to.equal('User not found');
+            done();
+        });
+    });
+
+    describe('post user validation', () => {
+        it('should validate that a password is provided and that it is at least 8 characters long', async () => {
+            const user = {
+                first_name: 'Timmy',
+                email: 'Timmy@gmail.com',
+                password: 'short',
+            }
+
+            const shortPasswordRes = await request(server).post('/api/users/').send(user).expect(404);
+            expect(shortPasswordRes.body.errors.password.msg).to.equal('Password must be at least 8 characters');
+
+            user.password = undefined;
+            await request(server).post('/api/users/').send(user).expect(404);
+        });
+
+        it('should validate that all attributes are provided and return a 404 error', async () => {
+            const user = {
+                first_name: 'Timmy',
+                email: 'Timmy@gmail.com',
+                password: 'password123456',
+            }
+
+            await request(server).post('/api/users/').send(user).expect(200);
+            await request(server).post('/api/users/').send({
+                ...user,
+                first_name: undefined
+            }).expect(404);
+            await request(server).post('/api/users/').send({
+                ...user,
+                email: undefined
+            }).expect(404);
+        })
+    })
 });
