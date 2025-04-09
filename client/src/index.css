@@ -1,3 +1,7 @@
+:root {
+    --health-share-blue: #00aec7;
+}
+
 body {
     margin: 0;
     padding: 0;

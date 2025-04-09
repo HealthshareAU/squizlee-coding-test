@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-
+import config from './config/config';
 
 class App extends React.Component {
     constructor() {
@@ -16,6 +16,7 @@ class App extends React.Component {
                 first_name: '',
                 email: '',
                 password: '',
+                favourite_fruit: 'Apple',
             },
         };
 
@@ -25,6 +26,25 @@ class App extends React.Component {
         this.handleIdChange = this.handleIdChange.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
         this.createUser = this.createUser.bind(this);
+        this.resetForm = this.resetForm.bind(this);
+
+        // Ref callback
+        this.setFormRef = element => {
+            this.mainFormRef = element;
+        }
+    }
+
+    resetForm() {
+        if (this.mainFormRef) {
+            this.mainFormRef.reset();
+        }
+
+        this.setState({
+            first_name: '',
+            email: '',
+            password: '',
+            favourite_fruit: 'Apple',
+        });
     }
 
     async post(url, data) {
@@ -38,6 +58,8 @@ class App extends React.Component {
         if (response.status !== 200) {
             throw Error(body.message);
         }
+
+        this.resetForm();
 
         return body;
     }
@@ -55,7 +77,7 @@ class App extends React.Component {
 
     async getUser() {
         if(this.state.id.length) {
-            const response = await this.get(`/api/get-user/${this.state.id}`);
+            const response = await this.get(`${config.SERVER_URL}/api/get-user/${this.state.id}`);
             this.setState({user: response.user});
         }
     }
@@ -76,7 +98,7 @@ class App extends React.Component {
 
     createUser(event) {
         event.preventDefault();
-        this.post('/api/users/', this.state.registerUser);
+        this.post(`${config.SERVER_URL}/api/users/`, this.state.registerUser);
     }
 
     render() {
@@ -99,15 +121,33 @@ class App extends React.Component {
                         Get User
                     </button>
                 </div>
-                <form onSubmit={this.createUser}>
-                    <label>First Name</label>
-                    <input name="first_name" onChange={this.handleInputChange}/>
-                    <label>Email</label>
-                    <input name="email_address" onChange={this.handleInputChange}/>
-                    <label>Password</label>
-                    <input name="password" onChange={this.handleInputChange}/>
-                    <button type="submit">Create User</button>
-                </form>
+                <hr />
+                <section className="main-form-container">
+                    <form className="main-form" onSubmit={this.createUser} ref={this.setFormRef}>
+                        <div className="main-form-group">
+                            <label htmlFor="first-name">First Name</label>
+                            <input required type="text" id="first-name" name="first_name" onChange={this.handleInputChange}/>
+                        </div>
+                        <div className="main-form-group">
+                            <label htmlFor="email-address">Email</label>
+                            <input required type="email" id="email-address" name="email" onChange={this.handleInputChange}/>
+                        </div>
+                        <div className="main-form-group">
+                            <label htmlFor="password">Password</label>
+                            <input required type="password" id="password" name="password" onChange={this.handleInputChange}/>
+                        </div>
+                        <div className="main-form-group">
+                            <label htmlFor="favourite-fruit">Favourite Fruit</label>
+                            <select required id="favourite-fruit" name="favourite_fruit" onChange={this.handleInputChange} defaultValue={this.state.registerUser.favourite_fruit}>
+                                <option value="Apple">🍏 Apple</option>
+                                <option value="Mango">🥭 Mango</option>
+                                <option value="Banana">🍌 Banana</option>
+                                <option value="Apricot">🍊 Apricot</option>
+                            </select>
+                        </div>
+                        <button type="submit">Create User</button>
+                    </form>
+                </section>
             </div>
         );
     }
