@@ -10,7 +10,6 @@ class App extends React.Component {
             user: {
                 first_name: '',
                 email: '',
-                password: '',
             },
             registerUser: {
                 first_name: '',
